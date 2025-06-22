@@ -72,7 +72,7 @@ Easily deploy on Railway or Render:
 ☁️ .env for secrets
 
 👑 Author
-Developed by: [Your Name or GitHub Username]
+Developed by: [render or railway or https://github.com/SaadALam7865]
 Feel free to ⭐️ this repo & connect!
 
 📜 License
