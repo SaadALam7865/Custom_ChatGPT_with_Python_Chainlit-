@@ -48,7 +48,7 @@ async def on_chat_start():
 
 @cl.on_message # handle received mesages from the user
 async def main(message: cl.Message):
-    msg = cl.Message(content='')
+    msg = cl.Message(content='Processing your request...')
     await msg.send()
 
     # Retrieve the agent and config from user session
@@ -59,35 +59,26 @@ async def main(message: cl.Message):
     history.append({'role': 'user', 'content':message.content})
     try:
         print("\n[CALLING_ AGENT_WITH_CONTEXT] \n", history, "\n") 
-        result = Runner.run_streamed(
-            # starting_agent=agent,
-            # input=history,
-            # run_config=config
-            agent,
-            history,
+        result = Runner.run_sync(
+            starting_agent=agent,
+            input=history,
             run_config=config
         )
-        # with want to use the result in a streaming way
-        async for event in result.stream_events():
-            if event.type == 'raw_response_event' and hasattr(event.data, 'delta'):
-                token = event.data.delta
-                await msg.stream_token(token)
-                # This is the raw response from the model
-        history.append({'role':'assistant', 'content': msg.content})
-        cl.user_session.set('chat history', history)
 
-        # response_content = result.final_output
-        # msg.content = response_content
-        # await msg.update()
+        response_content = result.final_output
+        msg.content = response_content
+        await msg.update()
 
-        # # user and assistant messages to new chat history
-        # cl.user_session.set('chat history', result.to_input_list())
+        # user and assistant messages to new chat history
+        cl.user_session.set('chat history', result.to_input_list())
+
         # both messages to chat history
         print(f'User Message: {message.content}')
-        print(f'Assistant Message: {msg.content}')
+        print(f'Assistant Message: {response_content}')
 
     except Exception as e:
-        await msg.update(content=f'Error: {str(e)}')
+        msg.content = f'An error occurred: {str(e)}'
+        await msg.update()
         print(f'Error: {str(e)}')
         
 
